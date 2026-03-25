@@ -163,19 +163,6 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-### Запуск всех тестов из корня проекта
-
-```bash
-# Установка зависимостей для всех сервисов
-cd user-service && pip install -r requirements-dev.txt
-cd ../survey-service && pip install -r requirements-dev.txt
-cd ../analytics-service && pip install -r requirements-dev.txt
-
-# Запуск всех тестов
-cd ..
-pytest user-service/tests/ survey-service/tests/ analytics-service/tests/
-```
-
 ### Линтинг и форматирование кода
 
 Все сервисы используют Ruff для проверки стиля кода:
