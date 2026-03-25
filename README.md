@@ -198,7 +198,7 @@ ruff format .             # Форматирование кода
 | Разработчик | Роль | GitHub |
 |-------------|------|--------|
 | Андреев И. | Разработчик A (User Service) | [@username](https://github.com/username) |
-| Бозванов И. | Разработчик B (Analytics Service) | [@username](https://github.com/username) |
+| Бозванов И. | Разработчик B (Analytics Service) | [@bozvan](https://github.com/bozvan) |
 | Скалеух И. | Разработчик C (Survey Service) | [@username](https://github.com/username) |
 
 ### Обратная связь
