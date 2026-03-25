@@ -53,27 +53,26 @@ cd survey-analytics-platform
 ```bash
 cd user-service
 python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8001
+source .venv/Scripts/activate
+/.venv/Scripts/python.exe -m pip install -r requirements.txt
+./.venv/Scripts/python.exe -m pip install -r requirements-dev.txt (если нужны тесты/ruff)
+./.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir src --reload
 ```
 
 #### Шаг 3: Запуск Survey Service (порт 8002)
 ```bash
-# Открыть новый терминал
 cd survey-service
 python -m venv .venv
-source .venv/bin/activate
+source .venv/Scripts/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8002
 ```
 
 #### Шаг 4: Запуск Analytics Service (порт 8003)
 ```bash
-# Открыть новый терминал
 cd analytics-service
 python -m venv .venv
-source .venv/bin/activate
+source .venv/Scripts/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8003
 ```
@@ -197,12 +196,11 @@ ruff format .             # Форматирование кода
 
 | Разработчик | Роль | GitHub |
 |-------------|------|--------|
-| Андреев И. | Разработчик A (User Service) | [@username](https://github.com/username) |
+| Андреев И. | Разработчик A (User Service) | [@Iv05An](https://github.com/Iv05An) |
 | Бозванов И. | Разработчик B (Analytics Service) | [@bozvan](https://github.com/bozvan) |
-| Скалеух И. | Разработчик C (Survey Service) | [@username](https://github.com/username) |
+| Скалеух И. | Разработчик C (Survey Service) | [@isco25](https://github.com/isco25) |
 
 ### Обратная связь
 
 По всем вопросам и предложениям обращайтесь через:
-- **GitHub Issues**: [ссылка на репозиторий]
-- **Telegram**: [ссылка на чат группы]
+- **GitHub Issues**: [ссылка на репозиторий](https://github.com/isco25/pius_project)
