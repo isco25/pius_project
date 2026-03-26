@@ -1,134 +1,115 @@
-```markdown
-# Survey Platform API — Сервис пользователей
+# Survey Platform API
 
-Сервис пользователей для платформы опросов. Реализует регистрацию, аутентификацию с JWT и получение данных пользователя.
+Минимальный backend-каркас для лабораторной работы №2 "Базовая инфраструктура и ядро системы".
 
----
+Сейчас в проекте реализована часть разработчика A:
 
-## 🚀 Функциональность
+- сервис пользователей;
+- регистрация `POST /register`;
+- авторизация с JWT `POST /login`;
+- получение пользователя `GET /users/{id}`;
+- unit/integration tests для пользовательского модуля;
+- базовая инфраструктура проекта, линтер и форматтер.
 
-| Метод | Эндпоинт | Описание | Аутентификация |
-|-------|----------|----------|----------------|
-| POST | `/register` | Регистрация нового пользователя | ❌ нет |
-| POST | `/login` | Вход в систему, получение JWT-токена | ❌ нет |
-| GET | `/users/{id}` | Получение данных пользователя по ID | ✅ требуется JWT |
+## Стек
 
----
+- Python 3.11+
+- FastAPI
+- SQLite (`sqlite3` из стандартной библиотеки)
+- JWT на HMAC SHA-256
+- Ruff для lint/format
+- unittest + FastAPI TestClient
 
-## 🛠 Технологии
+## Структура проекта
 
-- **Python 3.11+**
-- **FastAPI** — веб-фреймворк
-- **Uvicorn** — ASGI-сервер
-- **SQLite** — база данных
-- **JWT (HS256)** — аутентификация
-- **PBKDF2-SHA256** — хеширование паролей
-- **Pydantic** — валидация данных
-- **unittest** — тестирование
-
----
-
-## 📁 Структура проекта
-
-```
-src/app/
-├── main.py                    # Точка входа
-├── application.py             # Фабрика приложения
-├── config.py                  # Настройки
-├── database.py                # Работа с SQLite
-├── security.py                # Хеширование паролей + JWT
-└── users/                     # Модуль пользователей
-    ├── models.py              # Модель User
-    ├── schemas.py             # Pydantic-схемы
-    ├── repository.py          # Доступ к БД
-    ├── service.py             # Бизнес-логика
-    └── router.py              # Эндпоинты API
-
+```text
+src/
+  app/
+    config.py
+    database.py
+    main.py
+    security.py
+    users/
 tests/
-└── test_users.py              # Интеграционные тесты
 ```
 
----
-
-## ⚙️ Установка и запуск
+## Быстрый старт
 
 ```bash
-# Клонирование
-git clone https://github.com/isco25/pius_project.git
-cd pius_project
-
-# Виртуальное окружение
 python -m venv .venv
-source .venv/bin/activate        # Linux/macOS
-.venv\Scripts\activate            # Windows
-
-# Установка зависимостей
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-# Запуск сервера
+.venv\Scripts\activate
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 uvicorn app.main:app --app-dir src --reload
 ```
 
-Сервер доступен: http://127.0.0.1:8000  
-Документация: http://127.0.0.1:8000/docs
+По умолчанию база создается в `data/survey_platform.db`.
 
----
+## Переменные окружения
 
-## 🔐 Переменные окружения
+- `APP_NAME` - имя приложения, по умолчанию `Survey Platform API`
+- `DATABASE_URL` - путь к SQLite-файлу, по умолчанию `data/survey_platform.db`
+- `JWT_SECRET` - секрет для подписи JWT, по умолчанию `change-me-in-production`
+- `JWT_EXPIRATION_MINUTES` - срок жизни токена, по умолчанию `60`
 
-| Переменная | Значение по умолчанию | Описание |
-|------------|----------------------|----------|
-| `APP_NAME` | `Survey Platform API` | Название приложения |
-| `DATABASE_URL` | `data/survey_platform.db` | Путь к SQLite |
-| `JWT_SECRET` | `change-me-in-production` | Секрет JWT |
-| `JWT_EXPIRATION_MINUTES` | `60` | Время жизни токена |
+## Эндпоинты
 
----
+### `POST /register`
 
-## 📡 Примеры запросов
+Создает нового пользователя.
 
-### Регистрация
-```bash
-curl -X POST http://127.0.0.1:8000/register \
-  -H "Content-Type: application/json" \
-  -d '{"email": "alice@example.com", "password": "StrongPass123"}'
+Пример тела запроса:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "StrongPass123"
+}
 ```
 
-### Вход
-```bash
-curl -X POST http://127.0.0.1:8000/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "alice@example.com", "password": "StrongPass123"}'
+### `POST /login`
+
+Возвращает JWT-токен.
+
+Пример ответа:
+
+```json
+{
+  "access_token": "<jwt>",
+  "token_type": "bearer"
+}
 ```
 
-### Получение пользователя
-```bash
-curl -X GET http://127.0.0.1:8000/users/1 \
-  -H "Authorization: Bearer <token>"
+### `GET /users/{id}`
+
+Возвращает пользователя по `id`.
+
+Требует заголовок:
+
+```text
+Authorization: Bearer <jwt>
 ```
 
----
+## Проверки
 
-## 🧪 Тестирование
+Запуск тестов:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
----
-
-## 🧹 Линтинг и форматирование
+Запуск линтера:
 
 ```bash
-ruff check .
-ruff format .
+python -m ruff check .
 ```
 
----
+Форматирование:
 
-## 👤 Разработчик
-
-Андреев — сервис пользователей  
-Лабораторная работа №2
+```bash
+python -m ruff format .
 ```
+
+## Дальнейшее расширение
+
+Каркас приложения уже готов к добавлению сервисов аналитики, опросов и ответов в отдельных модулях с подключением роутеров в `src/app/main.py`.
