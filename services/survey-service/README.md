@@ -64,7 +64,7 @@ python -m pytest
 
 ## 6. Контакты и поддержка
 Авторы:
-- <ФИО/ник>
+- Скалеух Ивар
 
 Контакты:
 - GitHub Issues: https://github.com/isco25/pius_project
