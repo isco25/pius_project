@@ -79,7 +79,7 @@ uvicorn app.main:app --reload --port 8003
 
 ### Переменные окружения
 
-Для каждого сервиса можно настроить переменные окружения (создать файл `.env`):
+Для каждого сервиса можно настроить переменные окружения:
 
 **Analytics Service:**
 ```env
@@ -108,11 +108,11 @@ PORT=8001
 
 После запуска каждого сервиса документация доступна по адресу `/docs`:
 
-| Сервис | Swagger UI | ReDoc |
-|--------|------------|-------|
-| User Service | http://localhost:8001/docs | http://localhost:8001/redoc |
-| Survey Service | http://localhost:8002/docs | http://localhost:8002/redoc |
-| Analytics Service | http://localhost:8003/docs | http://localhost:8003/redoc |
+| Сервис | Swagger UI |
+|--------|------------|
+| User Service | http://localhost:8001/docs | 
+| Survey Service | http://localhost:8002/docs | 
+| Analytics Service | http://localhost:8003/docs | 
 
 ### Эндпоинты по сервисам
 
@@ -138,8 +138,9 @@ PORT=8001
 
 | Метод | Эндпоинт | Описание |
 |-------|----------|----------|
-| `GET` | `/analytics/surveys/{id}/basic` | Получение базовой статистики по опросу |
 | `GET` | `/health` | Проверка работоспособности сервиса |
+| `GET` | `/analytics/surveys/{id}/basic` | Получение базовой статистики по опросу |
+| `GET` | `/analytics/users/{id}/statistics` | Получение статистики по всем опросам пользователя |
 
 
 ## 5. Тестирование
