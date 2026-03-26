@@ -67,6 +67,5 @@ python -m pytest
 - <ФИО/ник>
 
 Контакты:
-- GitHub Issues: <ссылка на репозиторий>
-- Telegram: <@username>
-- Slack: <канал/контакт>
+- GitHub Issues: https://github.com/isco25/pius_project
+- Telegram: @Truasu
