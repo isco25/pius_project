@@ -1,208 +1,134 @@
-# Survey Analytics Platform
+```markdown
+# Survey Platform API — Сервис пользователей
 
-## 1. Название и назначение проекта
-
-**Survey Analytics Platform** — это платформа для создания опросов, сбора ответов и анализа данных. 
-
-### Состав платформы
-
-| Сервис | Роль | Основные функции |
-|--------|------|------------------|
-| **User Service** | Управление пользователями | Регистрация, авторизация, профили пользователей |
-| **Survey Service** | Управление опросами и ответами | CRUD опросов, сохранение ответов, валидация |
-| **Analytics Service** | Аналитика и статистика | Базовая статистика по опросам |
+Сервис пользователей для платформы опросов. Реализует регистрацию, аутентификацию с JWT и получение данных пользователя.
 
 ---
 
-## 2. Архитектура проекта
+## 🚀 Функциональность
 
-### Технологический стек
-
-| Технология | Назначение |
-|------------|------------|
-| **Python 3.11+** | Язык программирования для всех сервисов |
-| **FastAPI** | Веб-фреймворк для создания REST API |
-| **Uvicorn** | ASGI-сервер для запуска приложений |
-| **Pydantic** | Валидация данных и сериализация |
-| **HTTPX** | Асинхронный HTTP-клиент для взаимодействия между сервисами |
-| **Pytest** | Фреймворк для тестирования |
-| **Ruff** | Линтер и форматтер кода |
-
-**Связи между сервисами на текущем этапе:**
-- **Analytics Service** → **Survey Service**: получение данных об опросах и количества ответов
-- **Survey Service** → **User Service**: проверка авторизации пользователей (при создании опросов и ответов)
+| Метод | Эндпоинт | Описание | Аутентификация |
+|-------|----------|----------|----------------|
+| POST | `/register` | Регистрация нового пользователя | ❌ нет |
+| POST | `/login` | Вход в систему, получение JWT-токена | ❌ нет |
+| GET | `/users/{id}` | Получение данных пользователя по ID | ✅ требуется JWT |
 
 ---
 
-## 3. Запуск проекта
+## 🛠 Технологии
 
-### Требования
-- Python 3.11 или выше
-- Git
+- **Python 3.11+**
+- **FastAPI** — веб-фреймворк
+- **Uvicorn** — ASGI-сервер
+- **SQLite** — база данных
+- **JWT (HS256)** — аутентификация
+- **PBKDF2-SHA256** — хеширование паролей
+- **Pydantic** — валидация данных
+- **unittest** — тестирование
 
-### Способ 1: Локальный запуск всех сервисов
+---
 
-#### Шаг 1: Клонирование репозитория
-```bash
-git clone <repository-url>
-cd survey-analytics-platform
+## 📁 Структура проекта
+
+```
+src/app/
+├── main.py                    # Точка входа
+├── application.py             # Фабрика приложения
+├── config.py                  # Настройки
+├── database.py                # Работа с SQLite
+├── security.py                # Хеширование паролей + JWT
+└── users/                     # Модуль пользователей
+    ├── models.py              # Модель User
+    ├── schemas.py             # Pydantic-схемы
+    ├── repository.py          # Доступ к БД
+    ├── service.py             # Бизнес-логика
+    └── router.py              # Эндпоинты API
+
+tests/
+└── test_users.py              # Интеграционные тесты
 ```
 
+---
 
-#### Шаг 2: Запуск User Service (порт 8001)
+## ⚙️ Установка и запуск
+
 ```bash
-cd user-service
+# Клонирование
+git clone https://github.com/isco25/pius_project.git
+cd pius_project
+
+# Виртуальное окружение
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate        # Linux/macOS
+.venv\Scripts\activate            # Windows
+
+# Установка зависимостей
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8001
+pip install -r requirements-dev.txt
+
+# Запуск сервера
+uvicorn app.main:app --app-dir src --reload
 ```
 
-#### Шаг 3: Запуск Survey Service (порт 8002)
+Сервер доступен: http://127.0.0.1:8000  
+Документация: http://127.0.0.1:8000/docs
+
+---
+
+## 🔐 Переменные окружения
+
+| Переменная | Значение по умолчанию | Описание |
+|------------|----------------------|----------|
+| `APP_NAME` | `Survey Platform API` | Название приложения |
+| `DATABASE_URL` | `data/survey_platform.db` | Путь к SQLite |
+| `JWT_SECRET` | `change-me-in-production` | Секрет JWT |
+| `JWT_EXPIRATION_MINUTES` | `60` | Время жизни токена |
+
+---
+
+## 📡 Примеры запросов
+
+### Регистрация
 ```bash
-# Открыть новый терминал
-cd survey-service
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8002
+curl -X POST http://127.0.0.1:8000/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "alice@example.com", "password": "StrongPass123"}'
 ```
 
-#### Шаг 4: Запуск Analytics Service (порт 8003)
+### Вход
 ```bash
-# Открыть новый терминал
-cd analytics-service
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8003
+curl -X POST http://127.0.0.1:8000/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "alice@example.com", "password": "StrongPass123"}'
 ```
 
-### Переменные окружения
-
-Для каждого сервиса можно настроить переменные окружения (создать файл `.env`):
-
-**Analytics Service:**
-```env
-SURVEY_SERVICE_URL=http://localhost:8002
-HOST=0.0.0.0
-PORT=8003
-```
-
-**Survey Service:**
-```env
-USER_SERVICE_URL=http://localhost:8001
-HOST=0.0.0.0
-PORT=8002
-```
-
-**User Service:**
-```env
-SECRET_KEY=your-secret-key-here
-HOST=0.0.0.0
-PORT=8001
+### Получение пользователя
+```bash
+curl -X GET http://127.0.0.1:8000/users/1 \
+  -H "Authorization: Bearer <token>"
 ```
 
 ---
 
-## 4. API документация
-
-После запуска каждого сервиса документация доступна по адресу `/docs`:
-
-| Сервис | Swagger UI | ReDoc |
-|--------|------------|-------|
-| User Service | http://localhost:8001/docs | http://localhost:8001/redoc |
-| Survey Service | http://localhost:8002/docs | http://localhost:8002/redoc |
-| Analytics Service | http://localhost:8003/docs | http://localhost:8003/redoc |
-
-### Эндпоинты по сервисам
-
-#### User Service (порт 8001)
-
-| Метод | Эндпоинт | Описание |
-|-------|----------|----------|
-| `POST` | `/register` | Регистрация нового пользователя |
-| `POST` | `/login` | Авторизация, получение JWT токена |
-| `GET` | `/users/{id}` | Получение информации о пользователе |
-
-#### Survey Service (порт 8002)
-
-| Метод | Эндпоинт | Описание |
-|-------|----------|----------|
-| `POST` | `/surveys` | Создание нового опроса |
-| `GET` | `/surveys/{id}` | Получение опроса по ID |
-| `PUT` | `/surveys/{id}` | Обновление опроса |
-| `DELETE` | `/surveys/{id}` | Удаление опроса |
-| `POST` | `/answers` | Сохранение ответа на опрос |
-
-#### Analytics Service (порт 8003)
-
-| Метод | Эндпоинт | Описание |
-|-------|----------|----------|
-| `GET` | `/analytics/surveys/{id}/basic` | Получение базовой статистики по опросу |
-| `GET` | `/health` | Проверка работоспособности сервиса |
-
-
-## 5. Тестирование
-
-### Запуск тестов для конкретного сервиса
+## 🧪 Тестирование
 
 ```bash
-# User Service
-cd user-service
-pip install -r requirements-dev.txt
-pytest
-
-# Survey Service
-cd survey-service
-pip install -r requirements-dev.txt
-pytest
-
-# Analytics Service
-cd analytics-service
-pip install -r requirements-dev.txt
-pytest
-```
-
-### Запуск всех тестов из корня проекта
-
-```bash
-# Установка зависимостей для всех сервисов
-cd user-service && pip install -r requirements-dev.txt
-cd ../survey-service && pip install -r requirements-dev.txt
-cd ../analytics-service && pip install -r requirements-dev.txt
-
-# Запуск всех тестов
-cd ..
-pytest user-service/tests/ survey-service/tests/ analytics-service/tests/
-```
-
-### Линтинг и форматирование кода
-
-Все сервисы используют Ruff для проверки стиля кода:
-
-```bash
-# В каждом сервисе
-ruff check .              # Проверка кода
-ruff check --fix .        # Автоисправление проблем
-ruff format .             # Форматирование кода
+python -m unittest discover -s tests -v
 ```
 
 ---
 
+## 🧹 Линтинг и форматирование
 
-## 6. Контакты и поддержка
+```bash
+ruff check .
+ruff format .
+```
 
-### Авторы
+---
 
-| Разработчик | Роль | GitHub |
-|-------------|------|--------|
-| Андреев И. | Разработчик A (User Service) | [@username](https://github.com/username) |
-| Бозванов И. | Разработчик B (Analytics Service) | [@username](https://github.com/username) |
-| Скалеух И. | Разработчик C (Survey Service) | [@username](https://github.com/username) |
+## 👤 Разработчик
 
-### Обратная связь
-
-По всем вопросам и предложениям обращайтесь через:
-- **GitHub Issues**: [ссылка на репозиторий]
-- **Telegram**: [ссылка на чат группы]
+Андреев — сервис пользователей  
+Лабораторная работа №2
+```
