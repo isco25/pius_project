@@ -1,115 +1,142 @@
-# Survey Platform API
+# Survey Platform API — User Service
 
-Минимальный backend-каркас для лабораторной работы №2 "Базовая инфраструктура и ядро системы".
+## 1. Название и назначение сервиса
 
-Сейчас в проекте реализована часть разработчика A:
+**User Service** — микросервис управления пользователями для платформы создания опросов. Сервис отвечает за регистрацию, аутентификацию и предоставление информации о пользователях.
 
-- сервис пользователей;
-- регистрация `POST /register`;
-- авторизация с JWT `POST /login`;
-- получение пользователя `GET /users/{id}`;
-- unit/integration tests для пользовательского модуля;
-- базовая инфраструктура проекта, линтер и форматтер.
+### Основные функции:
+- Регистрация новых пользователей
+- Аутентификация с выдачей JWT-токенов
+- Получение информации о пользователе по ID
+- Проверка работоспособности сервиса
 
-## Стек
+---
 
-- Python 3.11+
-- FastAPI
-- SQLite (`sqlite3` из стандартной библиотеки)
-- JWT на HMAC SHA-256
-- Ruff для lint/format
-- unittest + FastAPI TestClient
+## 2. Архитектура и зависимости
 
-## Структура проекта
+### Технологии и фреймворки
+- **Python 3.11+** — язык программирования
+- **FastAPI** — веб-фреймворк для построения API
+- **Uvicorn** — ASGI-сервер для запуска приложения
+- **SQLite** — встраиваемая реляционная база данных
+- **JWT (HS256)** — механизм аутентификации
+- **PBKDF2-SHA256** — алгоритм хеширования паролей
+- **Pydantic** — валидация данных и сериализация
+- **unittest + TestClient** — тестирование API
+- **Ruff** — линтинг и форматирование кода
 
-```text
-src/
-  app/
-    config.py
-    database.py
-    main.py
-    security.py
-    users/
-tests/
-```
+### Взаимодействие с другими микросервисами
+На данный момент сервис работает автономно. В дальнейшем будет взаимодействовать с:
+- **Survey Service** — получение информации о создателе опроса
+- **Analytics Service** — предоставление данных о пользователях для аналитики
+- **Notification Service** — отправка уведомлений о регистрации и активности
 
-## Быстрый старт
+### Используемые внешние сервисы
+- **SQLite** — локальное хранение данных (в продакшене планируется замена на PostgreSQL)
+- Внешние сервисы (S3, Redis, Kafka) на данном этапе не используются
+
+---
+
+## 3. Способы запуска сервиса
+
+### Локальный запуск (без Docker)
 
 ```bash
+# 1. Создать виртуальное окружение
 python -m venv .venv
+
+# 2. Активировать виртуальное окружение (Windows)
 .venv\Scripts\activate
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
-uvicorn app.main:app --app-dir src --reload
+
+# 3. Установить зависимости
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# 4. Запустить сервер
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir src --reload
+
+# 5. Открыть документацию в браузере
+# http://127.0.0.1:8000/docs
+
+
 ```
 
-По умолчанию база создается в `data/survey_platform.db`.
+---
 
-## Переменные окружения
+## 4. API документация
 
-- `APP_NAME` - имя приложения, по умолчанию `Survey Platform API`
-- `DATABASE_URL` - путь к SQLite-файлу, по умолчанию `data/survey_platform.db`
-- `JWT_SECRET` - секрет для подписи JWT, по умолчанию `change-me-in-production`
-- `JWT_EXPIRATION_MINUTES` - срок жизни токена, по умолчанию `60`
+Интерактивная документация доступна после запуска сервиса:
+- **Swagger UI**: `http://127.0.0.1:8000/docs`
+- **ReDoc**: `http://127.0.0.1:8000/redoc`
 
-## Эндпоинты
+### Основные эндпоинты
 
-### `POST /register`
+| Эндпоинт | Метод | Описание | Требует авторизацию |
+|----------|-------|----------|---------------------|
+| `/health` | GET | Проверка работоспособности сервиса | Нет |
+| `/register` | POST | Регистрация нового пользователя | Нет |
+| `/login` | POST | Аутентификация, получение JWT-токена | Нет |
+| `/users/{id}` | GET | Получение данных пользователя по ID | Да (JWT) |
 
-Создает нового пользователя.
+### Примеры запросов
 
-Пример тела запроса:
-
-```json
-{
-  "email": "user@example.com",
-  "password": "StrongPass123"
-}
-```
-
-### `POST /login`
-
-Возвращает JWT-токен.
-
-Пример ответа:
-
-```json
-{
-  "access_token": "<jwt>",
-  "token_type": "bearer"
-}
-```
-
-### `GET /users/{id}`
-
-Возвращает пользователя по `id`.
-
-Требует заголовок:
-
-```text
-Authorization: Bearer <jwt>
-```
-
-## Проверки
-
-Запуск тестов:
-
+**1. Регистрация пользователя**
 ```bash
-python -m unittest discover -s tests -v
+curl -X POST http://127.0.0.1:8000/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "StrongPass123"}'
 ```
 
-Запуск линтера:
-
+**2. Вход в систему**
 ```bash
-python -m ruff check .
+curl -X POST http://127.0.0.1:8000/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "StrongPass123"}'
 ```
 
-Форматирование:
-
+**3. Получение информации о пользователе**
 ```bash
-python -m ruff format .
+curl -X GET http://127.0.0.1:8000/users/1 \
+  -H "Authorization: Bearer <ваш_токен>"
 ```
 
-## Дальнейшее расширение
+---
 
-Каркас приложения уже готов к добавлению сервисов аналитики, опросов и ответов в отдельных модулях с подключением роутеров в `src/app/main.py`.
+## 5. Как тестировать
+
+### Установка dev-зависимостей
+```bash
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+### Запуск тестов
+```bash
+# Запуск всех тестов
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+
+# Запуск конкретного теста
+.\.venv\Scripts\python.exe -m unittest tests.test_users.UserApiTests.test_register_user_successfully
+```
+
+### Линтинг и форматирование
+```bash
+# Проверка кода
+ruff check .
+
+# Автоисправление
+ruff check --fix .
+
+# Форматирование
+ruff format .
+```
+
+---
+
+## 6. Контакты и поддержка
+
+### Авторы
+- **Андреев Иван Алексеевич ПИН-33** — разработка сервиса пользователей
+
+### Связь
+- **GitHub Issues**: [@Iv05An](https://github.com/Iv05An)
+- **Telegram**: https://t.me/prov_an05
+- **Email**: 89o39752772@gmail.com
