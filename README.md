@@ -1,115 +1,195 @@
-# Survey Platform API
+# Survey Analytics Platform
 
-Минимальный backend-каркас для лабораторной работы №2 "Базовая инфраструктура и ядро системы".
+## 1. Название и назначение проекта
 
-Сейчас в проекте реализована часть разработчика A:
+**Survey Analytics Platform** — это платформа для создания опросов, сбора ответов и анализа данных. 
 
-- сервис пользователей;
-- регистрация `POST /register`;
-- авторизация с JWT `POST /login`;
-- получение пользователя `GET /users/{id}`;
-- unit/integration tests для пользовательского модуля;
-- базовая инфраструктура проекта, линтер и форматтер.
+### Состав платформы
 
-## Стек
+| Сервис | Роль | Основные функции |
+|--------|------|------------------|
+| **User Service** | Управление пользователями | Регистрация, авторизация, профили пользователей |
+| **Survey Service** | Управление опросами и ответами | CRUD опросов, сохранение ответов, валидация |
+| **Analytics Service** | Аналитика и статистика | Базовая статистика по опросам |
 
-- Python 3.11+
-- FastAPI
-- SQLite (`sqlite3` из стандартной библиотеки)
-- JWT на HMAC SHA-256
-- Ruff для lint/format
-- unittest + FastAPI TestClient
+---
 
-## Структура проекта
+## 2. Архитектура проекта
 
-```text
-src/
-  app/
-    config.py
-    database.py
-    main.py
-    security.py
-    users/
-tests/
+### Технологический стек
+
+| Технология | Назначение |
+|------------|------------|
+| **Python 3.11+** | Язык программирования для всех сервисов |
+| **FastAPI** | Веб-фреймворк для создания REST API |
+| **Uvicorn** | ASGI-сервер для запуска приложений |
+| **Pydantic** | Валидация данных и сериализация |
+| **HTTPX** | Асинхронный HTTP-клиент для взаимодействия между сервисами |
+| **Pytest** | Фреймворк для тестирования |
+| **Ruff** | Линтер и форматтер кода |
+
+**Связи между сервисами на текущем этапе:**
+- **Analytics Service** → **Survey Service**: получение данных об опросах и количества ответов
+- **Survey Service** → **User Service**: проверка авторизации пользователей (при создании опросов и ответов)
+
+---
+
+## 3. Запуск проекта
+
+### Требования
+- Python 3.11 или выше
+- Git
+
+### Способ 1: Локальный запуск всех сервисов
+
+#### Шаг 1: Клонирование репозитория
+```bash
+git clone <repository-url>
+cd survey-analytics-platform
 ```
 
-## Быстрый старт
 
+#### Шаг 2: Запуск User Service (порт 8001)
 ```bash
+cd user-service
 python -m venv .venv
-.venv\Scripts\activate
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
-uvicorn app.main:app --app-dir src --reload
+source .venv/Scripts/activate
+/.venv/Scripts/python.exe -m pip install -r requirements.txt
+./.venv/Scripts/python.exe -m pip install -r requirements-dev.txt (если нужны тесты/ruff)
+./.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir src --reload
 ```
 
-По умолчанию база создается в `data/survey_platform.db`.
-
-## Переменные окружения
-
-- `APP_NAME` - имя приложения, по умолчанию `Survey Platform API`
-- `DATABASE_URL` - путь к SQLite-файлу, по умолчанию `data/survey_platform.db`
-- `JWT_SECRET` - секрет для подписи JWT, по умолчанию `change-me-in-production`
-- `JWT_EXPIRATION_MINUTES` - срок жизни токена, по умолчанию `60`
-
-## Эндпоинты
-
-### `POST /register`
-
-Создает нового пользователя.
-
-Пример тела запроса:
-
-```json
-{
-  "email": "user@example.com",
-  "password": "StrongPass123"
-}
+#### Шаг 3: Запуск Survey Service (порт 8002)
+```bash
+cd survey-service
+python -m venv .venv
+source .venv/Scripts/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8002
 ```
 
-### `POST /login`
-
-Возвращает JWT-токен.
-
-Пример ответа:
-
-```json
-{
-  "access_token": "<jwt>",
-  "token_type": "bearer"
-}
+#### Шаг 4: Запуск Analytics Service (порт 8003)
+```bash
+cd analytics-service
+python -m venv .venv
+source .venv/Scripts/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8003
 ```
 
-### `GET /users/{id}`
+### Переменные окружения
 
-Возвращает пользователя по `id`.
+Для каждого сервиса можно настроить переменные окружения:
 
-Требует заголовок:
-
-```text
-Authorization: Bearer <jwt>
+**Analytics Service:**
+```env
+SURVEY_SERVICE_URL=http://localhost:8002
+HOST=0.0.0.0
+PORT=8003
 ```
 
-## Проверки
+**Survey Service:**
+```env
+USER_SERVICE_URL=http://localhost:8001
+HOST=0.0.0.0
+PORT=8002
+```
 
-Запуск тестов:
+**User Service:**
+```env
+SECRET_KEY=your-secret-key-here
+HOST=0.0.0.0
+PORT=8001
+```
+
+---
+
+## 4. API документация
+
+После запуска каждого сервиса документация доступна по адресу `/docs`:
+
+| Сервис | Swagger UI |
+|--------|------------|
+| User Service | http://localhost:8001/docs | 
+| Survey Service | http://localhost:8002/docs | 
+| Analytics Service | http://localhost:8003/docs | 
+
+### Эндпоинты по сервисам
+
+#### User Service (порт 8001)
+
+| Метод | Эндпоинт | Описание |
+|-------|----------|----------|
+| `POST` | `/register` | Регистрация нового пользователя |
+| `POST` | `/login` | Авторизация, получение JWT токена |
+| `GET` | `/users/{id}` | Получение информации о пользователе |
+
+#### Survey Service (порт 8002)
+
+| Метод | Эндпоинт | Описание |
+|-------|----------|----------|
+| `POST` | `/surveys` | Создание нового опроса |
+| `GET` | `/surveys/{id}` | Получение опроса по ID |
+| `PUT` | `/surveys/{id}` | Обновление опроса |
+| `DELETE` | `/surveys/{id}` | Удаление опроса |
+| `POST` | `/answers` | Сохранение ответа на опрос |
+
+#### Analytics Service (порт 8003)
+
+| Метод | Эндпоинт | Описание |
+|-------|----------|----------|
+| `GET` | `/health` | Проверка работоспособности сервиса |
+| `GET` | `/analytics/surveys/{id}/basic` | Получение базовой статистики по опросу |
+| `GET` | `/analytics/users/{id}/statistics` | Получение статистики по всем опросам пользователя |
+
+
+## 5. Тестирование
+
+### Запуск тестов для конкретного сервиса
 
 ```bash
-python -m unittest discover -s tests -v
+# User Service
+cd user-service
+pip install -r requirements-dev.txt
+pytest
+
+# Survey Service
+cd survey-service
+pip install -r requirements-dev.txt
+pytest
+
+# Analytics Service
+cd analytics-service
+pip install -r requirements-dev.txt
+pytest
 ```
 
-Запуск линтера:
+### Линтинг и форматирование кода
+
+Все сервисы используют Ruff для проверки стиля кода:
 
 ```bash
-python -m ruff check .
+# В каждом сервисе
+ruff check .              # Проверка кода
+ruff check --fix .        # Автоисправление проблем
+ruff format .             # Форматирование кода
 ```
 
-Форматирование:
+---
 
-```bash
-python -m ruff format .
-```
 
-## Дальнейшее расширение
+## 6. Контакты и поддержка
 
-Каркас приложения уже готов к добавлению сервисов аналитики, опросов и ответов в отдельных модулях с подключением роутеров в `src/app/main.py`.
+### Авторы
+
+| Разработчик | Роль | GitHub |
+|-------------|------|--------|
+| Андреев И. | Разработчик A (User Service) | [@Iv05An](https://github.com/Iv05An) |
+| Бозванов И. | Разработчик B (Analytics Service) | [@bozvan](https://github.com/bozvan) |
+| Скалеух И. | Разработчик C (Survey Service) | [@isco25](https://github.com/isco25) |
+
+### Обратная связь
+
+По всем вопросам и предложениям обращайтесь через:
+- **GitHub Issues**: [ссылка на репозиторий](https://github.com/isco25/pius_project)
+>>>>>>> 9ffb0f085664b08ff7da75aa8c93d4348d554a38
