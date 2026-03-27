@@ -62,6 +62,13 @@ pytest
 python -m pytest
 ```
 
+### Линтер и форматтер
+```bash
+cd services/survey-service
+python -m ruff check .
+python -m ruff format .
+```
+
 ## 6. Контакты и поддержка
 Авторы:
 - <ФИО/ник>

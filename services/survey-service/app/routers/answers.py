@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -20,9 +20,7 @@ router = APIRouter(prefix="/answers", tags=["Ответы"])
 def create_answer(payload: AnswerCreate, db: Session = Depends(get_db)) -> Answer:
     survey = db.get(Survey, payload.survey_id)
     if survey is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Survey not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Survey not found")
 
     answer = Answer(**payload.model_dump())
     db.add(answer)
