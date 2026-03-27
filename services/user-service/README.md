@@ -46,13 +46,13 @@
 python -m venv .venv
 
 # 2. Активировать виртуальное окружение (Windows)
-.venv\Scripts\activate
+.venv/Scripts/activate
 
 # 3. Установить зависимости
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+./.venv/Scripts\python.exe -m pip install -r requirements.txt
 
 # 4. Запустить сервер
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir src --reload
+./.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir src --reload
 
 # 5. Открыть документацию в браузере
 # http://127.0.0.1:8000/docs
@@ -105,28 +105,28 @@ curl -X GET http://127.0.0.1:8000/users/1 \
 
 ### Установка dev-зависимостей
 ```bash
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+./.venv/Scripts/python.exe -m pip install -r requirements-dev.txt
 ```
 
 ### Запуск тестов
 ```bash
 # Запуск всех тестов
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+./.venv/Scripts/python.exe -m unittest discover -s tests -v
 
 # Запуск конкретного теста
-.\.venv\Scripts\python.exe -m unittest tests.test_users.UserApiTests.test_register_user_successfully
+./.venv/Scripts/python.exe -m unittest tests.test_users.UserApiTests.test_register_user_successfully
 ```
 
 ### Линтинг и форматирование
 ```bash
 # Проверка кода
-ruff check .
+.venv/Scripts/python.exe -m ruff check .
 
 # Автоисправление
-ruff check --fix .
+.venv/Scripts/python.exe -m ruff check --fix .
 
 # Форматирование
-ruff format .
+.venv/Scripts/python.exe -m ruff format .
 ```
 
 ---
