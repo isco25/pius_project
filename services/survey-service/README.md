@@ -71,9 +71,8 @@ python -m ruff format .
 
 ## 6. Контакты и поддержка
 Авторы:
-- <ФИО/ник>
+- Скалеух Ивар
 
 Контакты:
-- GitHub Issues: <ссылка на репозиторий>
-- Telegram: <@username>
-- Slack: <канал/контакт>
+- GitHub Issues: https://github.com/isco25/pius_project
+- Telegram: @Truasu
