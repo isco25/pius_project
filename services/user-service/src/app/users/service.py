@@ -39,4 +39,3 @@ class UserService:
         if user is None:
             raise LookupError("User not found")
         return user
-

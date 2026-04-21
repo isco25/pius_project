@@ -7,7 +7,6 @@ from app.security import TokenError, decode_access_token
 from app.users.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 from app.users.service import UserService
 
-
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -80,7 +79,11 @@ def login_user(
     return TokenResponse(access_token=access_token)
 
 
-@router.get("/users/{user_id}", response_model=UserResponse)
+@router.get(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"description": "User not found"}},
+)
 def get_user(
     user_id: int,
     service: UserService = Depends(get_user_service),
@@ -94,4 +97,3 @@ def get_user(
             detail=str(error),
         ) from error
     return UserResponse.from_model(user)
-

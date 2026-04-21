@@ -49,4 +49,3 @@ class UserRepository:
             email=str(row["email"]),
             password_hash=str(row["password_hash"]),
         )
-

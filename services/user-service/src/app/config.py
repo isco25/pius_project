@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,4 +21,3 @@ def get_settings() -> Settings:
         jwt_algorithm="HS256",
         jwt_expiration_minutes=int(os.getenv("JWT_EXPIRATION_MINUTES", "60")),
     )
-

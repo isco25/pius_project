@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.users.models import User
 
-
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -43,4 +42,3 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
