@@ -60,7 +60,7 @@ class UserService:
             if existing_key is not None:
                 return self._replay_from_idempotency_key(existing_key)
 
-        existing_event = self.repository.get_event_by_answer_id(answer_id)
+        existing_event = self.repository.get_event_by_user_and_answer(user_id, answer_id)
         if existing_event is not None:
             return self._replay_from_event(existing_event, idempotency_key)
 
@@ -75,7 +75,7 @@ class UserService:
                 if existing_key is not None:
                     return self._replay_from_idempotency_key(existing_key)
 
-            existing_event = self.repository.get_event_by_answer_id(answer_id)
+            existing_event = self.repository.get_event_by_user_and_answer(user_id, answer_id)
             if existing_event is not None:
                 return self._replay_from_event(existing_event, idempotency_key)
 
@@ -94,6 +94,7 @@ class UserService:
                 raise LookupError("User not found")
 
             self.repository.update_event_status(
+                user_id=user_id,
                 answer_id=answer_id,
                 status=EVENT_STATUS_COMPLETED,
                 xp_awarded=amount,
@@ -108,6 +109,7 @@ class UserService:
             )
         except LookupError:
             self.repository.update_event_status(
+                user_id=user_id,
                 answer_id=answer_id,
                 status=EVENT_STATUS_FAILED,
                 idempotency_key=idempotency_key,
@@ -115,6 +117,7 @@ class UserService:
             raise
         except Exception as error:
             self.repository.update_event_status(
+                user_id=user_id,
                 answer_id=answer_id,
                 status=EVENT_STATUS_FAILED,
                 idempotency_key=idempotency_key,

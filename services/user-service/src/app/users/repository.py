@@ -89,16 +89,16 @@ class UserRepository:
             ).fetchone()
         return self._map_idempotency_key(row) if row is not None else None
 
-    def get_event_by_answer_id(self, answer_id: int) -> ProcessedEvent | None:
+    def get_event_by_user_and_answer(self, user_id: int, answer_id: int) -> ProcessedEvent | None:
         with self.database.connect() as connection:
             row = connection.execute(
                 """
                 SELECT
                     id, answer_id, user_id, xp_awarded, status, result_xp, result_level, created_at
                 FROM processed_events
-                WHERE answer_id = ?
+                WHERE user_id = ? AND answer_id = ?
                 """,
-                (answer_id,),
+                (user_id, answer_id),
             ).fetchone()
         return self._map_processed_event(row) if row is not None else None
 
@@ -131,7 +131,7 @@ class UserRepository:
                 connection.rollback()
                 return EventCreationResult(
                     created=False,
-                    event=self.get_event_by_answer_id(answer_id),
+                    event=self.get_event_by_user_and_answer(user_id, answer_id),
                     idempotency_record=(
                         self.get_idempotency_key(idempotency_key)
                         if idempotency_key is not None
@@ -141,7 +141,7 @@ class UserRepository:
 
         return EventCreationResult(
             created=True,
-            event=self.get_event_by_answer_id(answer_id),
+            event=self.get_event_by_user_and_answer(user_id, answer_id),
             idempotency_record=(
                 self.get_idempotency_key(idempotency_key)
                 if idempotency_key is not None
@@ -173,6 +173,7 @@ class UserRepository:
 
     def update_event_status(
         self,
+        user_id: int,
         answer_id: int,
         status: str,
         xp_awarded: int | None = None,
@@ -189,9 +190,9 @@ class UserRepository:
                     status = ?,
                     result_xp = COALESCE(?, result_xp),
                     result_level = COALESCE(?, result_level)
-                WHERE answer_id = ?
+                WHERE user_id = ? AND answer_id = ?
                 """,
-                (xp_awarded, status, result_xp, result_level, answer_id),
+                (xp_awarded, status, result_xp, result_level, user_id, answer_id),
             )
             if idempotency_key is not None:
                 connection.execute(
@@ -206,7 +207,7 @@ class UserRepository:
                     (status, result_xp, result_level, idempotency_key),
                 )
             connection.commit()
-        return self.get_event_by_answer_id(answer_id)
+        return self.get_event_by_user_and_answer(user_id, answer_id)
 
     @staticmethod
     def _map_user(row: sqlite3.Row) -> User:

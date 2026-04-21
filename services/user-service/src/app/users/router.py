@@ -56,14 +56,11 @@ def require_authentication(
         ) from error
 
 
-def require_internal_api_key(request: Request) -> None:
-    provided_token = request.headers.get("X-Internal-Token")
-    authorization_header = request.headers.get("Authorization")
-
-    if provided_token is None and authorization_header is not None:
-        scheme, _, token = authorization_header.partition(" ")
-        if scheme.lower() == "bearer" and token:
-            provided_token = token
+def require_internal_api_key(
+    request: Request,
+    x_internal_token: str | None = Header(default=None, alias="X-Internal-Token"),
+) -> None:
+    provided_token = x_internal_token
 
     if provided_token != request.app.state.settings.internal_api_key:
         raise HTTPException(

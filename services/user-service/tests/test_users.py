@@ -273,6 +273,43 @@ class UserApiTests(unittest.TestCase):
         self.assertEqual(stats_response.status_code, 200)
         self.assertEqual(stats_response.json()["xp"], 10)
 
+    def test_answer_created_event_allows_same_answer_id_for_different_users(self) -> None:
+        alice = self.register_user(email="alice@example.com")
+        bob = self.register_user(email="bob@example.com")
+
+        alice_response = self.client.post(
+            "/internal/events/answer-created",
+            json={
+                "user_id": alice["id"],
+                "answer_id": 555,
+                "question_id": 15,
+                "survey_id": 25,
+            },
+            headers=self.internal_headers(idempotency_key="alice-555"),
+        )
+        bob_response = self.client.post(
+            "/internal/events/answer-created",
+            json={
+                "user_id": bob["id"],
+                "answer_id": 555,
+                "question_id": 15,
+                "survey_id": 25,
+            },
+            headers=self.internal_headers(idempotency_key="bob-555"),
+        )
+
+        self.assertEqual(alice_response.status_code, 200)
+        self.assertEqual(bob_response.status_code, 200)
+        self.assertEqual(alice_response.json()["xp"], 5)
+        self.assertEqual(bob_response.json()["xp"], 5)
+
+        alice_stats = self.client.get(f"/users/{alice['id']}/stats")
+        bob_stats = self.client.get(f"/users/{bob['id']}/stats")
+        self.assertEqual(alice_stats.status_code, 200)
+        self.assertEqual(bob_stats.status_code, 200)
+        self.assertEqual(alice_stats.json()["xp"], 5)
+        self.assertEqual(bob_stats.json()["xp"], 5)
+
     def test_answer_created_event_marks_failed_status_for_unknown_user(self) -> None:
         response = self.client.post(
             "/internal/events/answer-created",
@@ -420,7 +457,7 @@ class LegacyMigrationTests(unittest.TestCase):
         self.assertIn("xp", columns)
         self.assertIn("level", columns)
         self.assertIsNotNone(version_row)
-        self.assertEqual(version_row[0], "0003_create_event_deduplication_tables")
+        self.assertEqual(version_row[0], "0004_fix_unique_constraint_events")
 
 
 class UserRepositoryTests(unittest.TestCase):
@@ -461,6 +498,30 @@ class UserRepositoryTests(unittest.TestCase):
         self.assertFalse(second_attempt.created)
         self.assertIsNotNone(second_attempt.event)
         self.assertEqual(second_attempt.event.answer_id, 1234)
+
+    def test_create_idempotent_event_allows_same_answer_for_different_users(self) -> None:
+        first_user = self.repository.create(
+            email="first@example.com",
+            password_hash="hashed-password",
+        )
+        second_user = self.repository.create(
+            email="second@example.com",
+            password_hash="hashed-password",
+        )
+
+        first_attempt = self.repository.create_idempotent_event(
+            answer_id=4321,
+            user_id=first_user.id,
+            idempotency_key="first-key",
+        )
+        second_attempt = self.repository.create_idempotent_event(
+            answer_id=4321,
+            user_id=second_user.id,
+            idempotency_key="second-key",
+        )
+
+        self.assertTrue(first_attempt.created)
+        self.assertTrue(second_attempt.created)
 
 
 if __name__ == "__main__":
