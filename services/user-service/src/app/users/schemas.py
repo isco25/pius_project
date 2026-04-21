@@ -42,3 +42,21 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class UserStatsResponse(BaseModel):
+    id: int
+    email: str
+    xp: int
+    level: int
+
+    @classmethod
+    def from_model(cls, user: User) -> "UserStatsResponse":
+        return cls(id=user.id, email=user.email, xp=user.xp, level=user.level)
+
+
+class AnswerCreatedEvent(BaseModel):
+    user_id: int
+    answer_id: int
+    question_id: int
+    survey_id: int
