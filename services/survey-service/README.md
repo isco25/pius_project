@@ -15,6 +15,7 @@
 - Python 3.11+
 - FastAPI
 - SQLAlchemy
+- Alembic (миграции)
 - SQLite (по умолчанию)
 - Pytest (тесты)
 
@@ -31,11 +32,19 @@
 ```bash
 cd services/survey-service
 pip install -r requirements.txt
+python -m alembic upgrade head
 python -m uvicorn app.main:app --reload --port 8001
 ```
 
 ### Переменные окружения
 - `DATABASE_URL` — строка подключения к БД (по умолчанию `sqlite:///./survey.db`).
+
+### Миграции
+Создание таблиц выполняется через Alembic:
+```bash
+cd services/survey-service
+python -m alembic upgrade head
+```
 
 ## 4. API документация
 Swagger/OpenAPI:
@@ -69,11 +78,21 @@ python -m ruff check .
 python -m ruff format .
 ```
 
+Пример тела запроса для `POST /answers`:
+```json
+{
+  "survey_id": 1,
+  "answers": [
+    {"name": "q1", "value": "да"},
+    {"name": "q2", "value": "нет"}
+  ]
+}
+```
+
 ## 6. Контакты и поддержка
 Авторы:
-- <ФИО/ник>
+- Ивар Скалеух
 
 Контакты:
-- GitHub Issues: <ссылка на репозиторий>
-- Telegram: <@username>
-- Slack: <канал/контакт>
+- GitHub Issues: https://github.com/isco25/pius_project
+- Telegram: @Truasu

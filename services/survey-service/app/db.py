@@ -26,6 +26,4 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    from app import models
-
-    models.Base.metadata.create_all(bind=engine)
+    return None

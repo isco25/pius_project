@@ -47,6 +47,7 @@ def list_surveys(db: Session = Depends(get_db)) -> list[Survey]:
 @router.get(
     "/{survey_id}",
     response_model=SurveyRead,
+    responses={404: {"description": "Survey not found"}},
     summary="Получить опрос",
     description="Возвращает опрос по его идентификатору.",
 )
@@ -57,6 +58,7 @@ def get_survey(survey_id: int, db: Session = Depends(get_db)) -> Survey:
 @router.put(
     "/{survey_id}",
     response_model=SurveyRead,
+    responses={404: {"description": "Survey not found"}},
     summary="Обновить опрос",
     description="Обновляет поля опроса.",
 )
@@ -76,6 +78,7 @@ def update_survey(
 @router.delete(
     "/{survey_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Survey not found"}},
     summary="Удалить опрос",
     description="Удаляет опрос по идентификатору.",
 )
@@ -89,6 +92,7 @@ def delete_survey(survey_id: int, db: Session = Depends(get_db)) -> Response:
 @router.get(
     "/{survey_id}/answers/count",
     response_model=AnswerCountRead,
+    responses={404: {"description": "Survey not found"}},
     summary="Количество ответов",
     description="Возвращает количество ответов для опроса.",
 )
@@ -96,3 +100,5 @@ def get_answer_count(survey_id: int, db: Session = Depends(get_db)) -> AnswerCou
     get_survey_or_404(db, survey_id)
     answers_count = db.scalar(select(func.count(Answer.id)).where(Answer.survey_id == survey_id))
     return AnswerCountRead(survey_id=survey_id, answers_count=answers_count or 0)
+
+

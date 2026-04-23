@@ -13,6 +13,7 @@ router = APIRouter(prefix="/answers", tags=["Ответы"])
 @router.post(
     "",
     response_model=AnswerRead,
+    responses={404: {"description": "Survey not found"}},
     status_code=status.HTTP_201_CREATED,
     summary="Сохранить ответ",
     description="Сохраняет ответ на опрос.",
@@ -27,3 +28,5 @@ def create_answer(payload: AnswerCreate, db: Session = Depends(get_db)) -> Answe
     db.commit()
     db.refresh(answer)
     return answer
+
+

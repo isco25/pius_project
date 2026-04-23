@@ -30,15 +30,20 @@ class SurveyRead(SurveyBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AnswerItem(BaseModel):
+    name: str = Field(..., min_length=1)
+    value: Any
+
+
 class AnswerCreate(BaseModel):
     survey_id: int
-    answers: dict[str, Any]
+    answers: list[AnswerItem]
 
 
 class AnswerRead(BaseModel):
     id: int
     survey_id: int
-    answers: dict[str, Any]
+    answers: list[AnswerItem]
     submitted_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
