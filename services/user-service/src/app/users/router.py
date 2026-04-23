@@ -1,12 +1,18 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.security import TokenError, decode_access_token
-from app.users.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from app.users.schemas import (
+    AnswerCreatedEvent,
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserResponse,
+    UserStatsResponse,
+)
 from app.users.service import UserService
-
 
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -50,6 +56,19 @@ def require_authentication(
         ) from error
 
 
+def require_internal_api_key(
+    request: Request,
+    x_internal_token: str | None = Header(default=None, alias="X-Internal-Token"),
+) -> None:
+    provided_token = x_internal_token
+
+    if provided_token != request.app.state.settings.internal_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid internal API key",
+        )
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     payload: RegisterRequest,
@@ -80,7 +99,11 @@ def login_user(
     return TokenResponse(access_token=access_token)
 
 
-@router.get("/users/{user_id}", response_model=UserResponse)
+@router.get(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"description": "User not found"}},
+)
 def get_user(
     user_id: int,
     service: UserService = Depends(get_user_service),
@@ -95,3 +118,65 @@ def get_user(
         ) from error
     return UserResponse.from_model(user)
 
+
+@router.get(
+    "/users/{user_id}/stats",
+    response_model=UserStatsResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"description": "User not found"}},
+)
+def get_user_stats(
+    user_id: int,
+    service: UserService = Depends(get_user_service),
+) -> UserStatsResponse:
+    try:
+        user = service.get_user(user_id)
+    except LookupError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+    return UserStatsResponse.from_model(user)
+
+
+@router.get("/leaderboard", response_model=list[UserStatsResponse])
+def get_leaderboard(
+    limit: int = Query(default=10, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    service: UserService = Depends(get_user_service),
+) -> list[UserStatsResponse]:
+    users = service.get_leaderboard(limit=limit, offset=offset)
+    return [UserStatsResponse.from_model(user) for user in users]
+
+
+@router.post(
+    "/internal/events/answer-created",
+    response_model=UserStatsResponse,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {"description": "Invalid internal API key"},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Event processing failed"},
+    },
+)
+def handle_answer_created_event(
+    payload: AnswerCreatedEvent,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    service: UserService = Depends(get_user_service),
+    _: None = Depends(require_internal_api_key),
+) -> UserStatsResponse:
+    try:
+        result = service.add_xp(
+            user_id=payload.user_id,
+            answer_id=payload.answer_id,
+            idempotency_key=idempotency_key,
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(error),
+        ) from error
+    return UserStatsResponse.from_model(result.user)

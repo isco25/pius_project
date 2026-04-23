@@ -4,14 +4,15 @@ from fastapi import FastAPI
 
 from app.config import get_settings
 from app.database import Database
+from app.migrations import run_migrations
 from app.users.repository import UserRepository
 from app.users.router import router as users_router
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    run_migrations(settings.database_path)
     database = Database(settings.database_path)
-    database.init_db()
 
     app = FastAPI(title=settings.app_name, version="0.1.0")
     app.state.settings = settings
@@ -24,4 +25,3 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     return app
-
