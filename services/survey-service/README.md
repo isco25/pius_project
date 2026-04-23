@@ -96,3 +96,5 @@ python -m ruff format .
 Контакты:
 - GitHub Issues: https://github.com/isco25/pius_project
 - Telegram: @Truasu
+- GitHub Issues: https://github.com/isco25/pius_project
+- Telegram: @Truasu
