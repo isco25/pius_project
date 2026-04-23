@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Answer, Survey
-from app.schemas import AnswerCountRead, SurveyCreate, SurveyRead, SurveyUpdate, normalize_category
+from app.schemas import (
+    AnswerCountRead,
+    SurveyCreate,
+    SurveyRead,
+    SurveyUpdate,
+    normalize_category,
+)
 
 router = APIRouter(prefix="/surveys", tags=["Опросы"])
 
