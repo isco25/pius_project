@@ -1,15 +1,15 @@
 """create surveys and answers tables
 
 Revision ID: 20260327_0001
-Revises: 
+Revises:
 Create Date: 2026-03-27 00:00:00.000000
 """
 
 from __future__ import annotations
 
 import sqlalchemy as sa
-from alembic import op
 
+from alembic import op
 
 revision = "20260327_0001"
 down_revision = None
