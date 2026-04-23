@@ -1,29 +1,18 @@
-﻿from __future__ import annotations
-
-from contextlib import asynccontextmanager
+from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.db import init_db
 from app.routers.answers import router as answers_router
 from app.routers.surveys import router as surveys_router
 
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    init_db()
-    yield
-
-
 app = FastAPI(
-    title="Сервис опросов",
-    description="CRUD опросов и сохранение ответов.",
+    title="РЎРµСЂРІРёСЃ РѕРїСЂРѕСЃРѕРІ",
+    description="CRUD РѕРїСЂРѕСЃРѕРІ Рё СЃРѕС…СЂР°РЅРµРЅРёРµ РѕС‚РІРµС‚РѕРІ.",
     version="1.0.0",
-    lifespan=lifespan,
 )
 
 
-@app.get("/health", summary="Проверка здоровья сервиса")
+@app.get("/health", summary="РџСЂРѕРІРµСЂРєР° Р·РґРѕСЂРѕРІСЊСЏ СЃРµСЂРІРёСЃР°")
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
 

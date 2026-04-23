@@ -74,7 +74,13 @@ def test_create_answer_and_count_answers(client: TestClient) -> None:
 
     answer_response = client.post(
         "/answers",
-        json={"survey_id": survey_id, "answers": {"q1": "yes", "q2": "python"}},
+        json={
+            "survey_id": survey_id,
+            "answers": [
+                {"name": "q1", "value": "yes"},
+                {"name": "q2", "value": "python"},
+            ],
+        },
     )
     count_response = client.get(f"/surveys/{survey_id}/answers/count")
 
