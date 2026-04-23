@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from base64 import urlsafe_b64decode, urlsafe_b64encode
-from datetime import UTC, datetime, timedelta
 import hashlib
 import hmac
 import json
 import secrets
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from datetime import UTC, datetime, timedelta
 
 
 class TokenError(Exception):
@@ -110,4 +110,3 @@ def _urlsafe_b64encode(value: bytes) -> str:
 def _urlsafe_b64decode(value: str) -> str:
     padding = "=" * (-len(value) % 4)
     return urlsafe_b64decode(f"{value}{padding}".encode("utf-8")).decode("utf-8")
-

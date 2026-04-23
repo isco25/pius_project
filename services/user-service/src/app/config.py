@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
@@ -11,6 +11,7 @@ class Settings:
     jwt_secret: str
     jwt_algorithm: str
     jwt_expiration_minutes: int
+    internal_api_key: str
 
 
 def get_settings() -> Settings:
@@ -20,5 +21,5 @@ def get_settings() -> Settings:
         jwt_secret=os.getenv("JWT_SECRET", "change-me-in-production"),
         jwt_algorithm="HS256",
         jwt_expiration_minutes=int(os.getenv("JWT_EXPIRATION_MINUTES", "60")),
+        internal_api_key=os.getenv("INTERNAL_API_KEY", "change-me-in-production"),
     )
-
