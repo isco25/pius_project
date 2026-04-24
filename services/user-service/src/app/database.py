@@ -1,31 +1,16 @@
 from __future__ import annotations
 
+import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
-import sqlite3
 from typing import Iterator
+
+from sqlalchemy.engine import make_url
 
 
 class Database:
     def __init__(self, db_path: str) -> None:
-        self.db_path = db_path
-
-    def init_db(self) -> None:
-        if self.db_path != ":memory:":
-            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-
-        with self.connect() as connection:
-            connection.execute("PRAGMA foreign_keys = ON")
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    email TEXT NOT NULL UNIQUE,
-                    password_hash TEXT NOT NULL
-                )
-                """
-            )
-            connection.commit()
+        self.db_path = normalize_database_path(db_path)
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:
@@ -36,3 +21,21 @@ class Database:
         finally:
             connection.close()
 
+
+def normalize_database_path(database_path: str) -> str:
+    if "://" not in database_path:
+        return database_path
+
+    url = make_url(database_path)
+    if url.get_backend_name() != "sqlite":
+        raise ValueError("User service supports only SQLite databases")
+
+    return url.database or ":memory:"
+
+
+def ensure_database_directory(database_path: str) -> None:
+    normalized_path = normalize_database_path(database_path)
+    if normalized_path == ":memory:":
+        return
+
+    Path(normalized_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)

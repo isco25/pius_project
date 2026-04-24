@@ -192,3 +192,4 @@ ruff format .             # Форматирование кода
 
 По всем вопросам и предложениям обращайтесь через:
 - **GitHub Issues**: [ссылка на репозиторий](https://github.com/isco25/pius_project)
+>>>>>>> 9ffb0f085664b08ff7da75aa8c93d4348d554a38
